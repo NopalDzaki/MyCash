@@ -26,7 +26,7 @@ function formatDate(date) {
   if (!(date instanceof Date)) date = new Date();
 
   const formatter = new Intl.DateTimeFormat('id-ID', {
-    timeZone: process.env.TZ || 'Asia/Jakarta',
+    timeZone: process.env.APP_TZ || 'Asia/Jakarta',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -44,7 +44,7 @@ function formatTime(date) {
   if (!(date instanceof Date)) date = new Date();
 
   const formatter = new Intl.DateTimeFormat('id-ID', {
-    timeZone: process.env.TZ || 'Asia/Jakarta',
+    timeZone: process.env.APP_TZ || 'Asia/Jakarta',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -77,7 +77,7 @@ function getMonthName(monthIndex) {
  */
 function getTzMonthAndYear(date) {
   if (!(date instanceof Date)) date = new Date();
-  const tz = process.env.TZ || 'Asia/Jakarta';
+  const tz = process.env.APP_TZ || 'Asia/Jakarta';
 
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,

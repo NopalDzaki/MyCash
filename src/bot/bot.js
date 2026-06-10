@@ -100,7 +100,7 @@ function createBot(token) {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-        timeZone: process.env.TZ || 'Asia/Jakarta',
+        timeZone: process.env.APP_TZ || 'Asia/Jakarta',
       });
 
       const todayTransactions = allTransactions.filter((t) => t.date === todayStr);
