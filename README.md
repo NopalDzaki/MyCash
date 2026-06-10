@@ -1,4 +1,15 @@
+---
+title: MyCash Bot
+emoji: 💰
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 💰 MyCash — Telegram Finance Tracker
+
 
 Bot Telegram untuk pencatatan keuangan pribadi dengan Natural Language Processing Bahasa Indonesia. Cukup kirim pesan seperti `"15000 makan di warteg"` dan bot akan otomatis mencatat transaksimu ke Google Sheets!
 
