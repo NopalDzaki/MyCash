@@ -8,9 +8,9 @@ const { formatRupiah, formatDate, formatTime, getMonthName } = require('../utils
  * Pesan selamat datang saat /start
  */
 function welcomeMessage() {
-  return `💰 *Selamat datang di MyCash!*
+  return `💰 *Selamat datang di MyCash\\!*
 
-Saya adalah bot pencatat keuangan pribadimu. Cukup kirim pesan dengan bahasa sehari\\-hari dan saya akan otomatis mencatatnya\\!
+Saya adalah bot pencatat keuangan pribadimu\\. Cukup kirim pesan dengan bahasa sehari\\-hari dan saya akan otomatis mencatatnya\\!
 
 *Contoh pesan:*
 • \`2000 buat parkir\`
