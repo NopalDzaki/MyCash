@@ -1,0 +1,18 @@
+{
+  "name": "mycash",
+  "version": "1.0.0",
+  "description": "Telegram bot pencatatan keuangan pribadi dengan NLP Bahasa Indonesia & Google Sheets",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": ["telegram", "bot", "finance", "keuangan", "indonesia"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "telegraf": "^4.16.3",
+    "googleapis": "^144.0.0",
+    "dotenv": "^16.4.7"
+  }
+}
