@@ -17,34 +17,60 @@ const { initSheets } = require('./sheets/sheetsClient');
 
 const PORT = process.env.PORT || 3000;
 
+// ANSI Colors for console formatting
+const colors = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+};
+
+// Logging Helpers with premium styling
+const log = {
+  info: (msg) => console.log(`💡 ${colors.cyan}${colors.bold}[INFO]${colors.reset} ${msg}`),
+  success: (msg) => console.log(`✨ ${colors.green}${colors.bold}[SUCCESS]${colors.reset} ${msg}`),
+  warn: (msg) => console.log(`⚠️ ${colors.yellow}${colors.bold}[WARN]${colors.reset} ${msg}`),
+  error: (msg, detail) => console.error(`🚨 ${colors.red}${colors.bold}[ERROR]${colors.reset} ${colors.bold}${msg}${colors.reset}${detail ? `\n   ${colors.red}↳${colors.reset} ${colors.dim}${detail}${colors.reset}` : ''}`),
+  system: (msg) => console.log(`⚙️  ${colors.magenta}${colors.bold}[SYSTEM]${colors.reset} ${colors.dim}${msg}${colors.reset}`),
+};
+
 async function main() {
   console.log('');
-  console.log('╔═══════════════════════════════════════╗');
-  console.log('║      💰 MyCash - Finance Tracker      ║');
-  console.log('║    Telegram Bot × Google Sheets       ║');
-  console.log('╚═══════════════════════════════════════╝');
+  console.log(`${colors.cyan}${colors.bold}  ╭──────────────────────────────────────────────────╮${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}  │${colors.reset}   👑   ${colors.bold}${colors.green}MYCASH FINANCE TRACKER — PREMIUM v1.2.0    ${colors.cyan}${colors.bold}│${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}  │${colors.reset}   ⚡   NLP Indonesian Engine Active              ${colors.cyan}${colors.bold}│${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}  │${colors.reset}   📊   Synchronized to Google Sheets API          ${colors.cyan}${colors.bold}│${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}  │${colors.reset}   😎   Developed with precision by NOPAL GANTENG  ${colors.cyan}${colors.bold}│${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}  ╰──────────────────────────────────────────────────╯${colors.reset}`);
   console.log('');
 
   // Validasi token
   const token = process.env.BOT_TOKEN;
   if (!token) {
-    console.error('❌ BOT_TOKEN tidak ditemukan di .env');
-    console.error('   Tambahkan: BOT_TOKEN=your_token_here');
+    log.error('BOT_TOKEN tidak ditemukan di .env');
+    console.error(`   ${colors.yellow}Tambahkan: BOT_TOKEN=your_token_here${colors.reset}\n`);
     process.exit(1);
   }
 
   // Inisialisasi Google Sheets
-  console.log('📊 Menghubungkan ke Google Sheets...');
+  log.system('Menghubungkan ke Google Sheets...');
   await initSheets();
-  console.log('');
 
   // Buat bot
   const bot = createBot(token);
 
   // Graceful shutdown
   const shutdown = (signal) => {
-    console.log(`\n${signal} diterima. Mematikan bot...`);
+    console.log(`\n🛑 ${colors.red}${colors.bold}[SHUTDOWN]${colors.reset} Sinyal ${colors.bold}${signal}${colors.reset} diterima.`);
+    log.system('Menghentikan koneksi bot Telegram...');
     bot.stop(signal);
+    log.success('Bot berhasil dihentikan dengan aman. Sampai jumpa! 👋\n');
     process.exit(0);
   };
 
@@ -71,13 +97,13 @@ async function main() {
             const update = JSON.parse(body);
             await bot.handleUpdate(update);
           } catch (err) {
-            console.error('Error handling update:', err.message);
+            log.error('Gagal menangani update webhook', err.message);
           }
           res.writeHead(200);
           res.end('ok');
         });
       } else if (req.method === 'GET' && req.url === '/') {
-        // Health check endpoint (Render butuh ini)
+        // Health check endpoint
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
@@ -91,15 +117,16 @@ async function main() {
     });
 
     server.listen(PORT, async () => {
-      console.log(`🌐 Server berjalan di port ${PORT}`);
+      log.info(`HTTP Server berjalan lancar di port: ${colors.bold}${PORT}${colors.reset}`);
 
       // Set webhook di Telegram
       try {
+        log.system('Mengatur Webhook URL di Telegram...');
         await bot.telegram.setWebhook(fullWebhookUrl);
-        console.log(`🔗 Webhook diset ke: ${webhookUrl}/webhook/***`);
-        console.log('✅ MyCash bot aktif (Webhook mode)!\n');
+        log.success(`Webhook terdaftar: ${colors.blue}${webhookUrl}/webhook/***${colors.reset}`);
+        log.success(`${colors.bold}MyCash Bot siap menerima transaksi! (Webhook Mode)${colors.reset}\n`);
       } catch (err) {
-        console.error('❌ Gagal set webhook:', err.message);
+        log.error('Gagal mengatur webhook Telegram', err.message);
       }
     });
 
@@ -125,19 +152,21 @@ async function main() {
     });
 
     server.listen(PORT, () => {
-      console.log(`🌐 Health check server di port ${PORT}`);
+      log.info(`Health check HTTP server aktif di port: ${colors.bold}${PORT}${colors.reset}`);
     });
 
-    console.log('🤖 Menjalankan bot (Polling mode)...');
+    log.system('Meluncurkan bot dalam mode Polling (Development)...');
     await bot.launch();
 
-    console.log('✅ MyCash bot aktif dan siap menerima pesan!');
-    console.log('   Buka Telegram dan kirim pesan ke bot kamu.');
-    console.log('   Tekan Ctrl+C untuk berhenti.\n');
+    log.success(`${colors.bold}MyCash Bot aktif dan siap mendengarkan pesan Telegram!${colors.reset}`);
+    console.log(`   ${colors.dim}┌────────────────────────────────────────────────────────┐`);
+    console.log(`   │ 👉 Buka Telegram dan kirim pesan transaksi ke bot kamu │`);
+    console.log(`   │ 👉 Tekan Ctrl+C untuk mematikan bot secara aman        │`);
+    console.log(`   └────────────────────────────────────────────────────────┘${colors.reset}\n`);
   }
 }
 
 main().catch((err) => {
-  console.error('❌ Fatal error:', err);
+  log.error('Fatal error saat menjalankan aplikasi', err);
   process.exit(1);
 });

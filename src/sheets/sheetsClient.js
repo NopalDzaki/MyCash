@@ -6,6 +6,29 @@
  */
 
 const { google } = require('googleapis');
+const { formatRupiah } = require('../utils/formatter');
+
+// ANSI Colors for console formatting
+const colors = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+};
+
+// Logging Helpers with premium styling
+const log = {
+  info: (msg) => console.log(`💡 ${colors.cyan}${colors.bold}[INFO]${colors.reset} ${msg}`),
+  success: (msg) => console.log(`✨ ${colors.green}${colors.bold}[SUCCESS]${colors.reset} ${msg}`),
+  warn: (msg) => console.log(`⚠️ ${colors.yellow}${colors.bold}[WARN]${colors.reset} ${msg}`),
+  error: (msg, detail) => console.error(`🚨 ${colors.red}${colors.bold}[ERROR]${colors.reset} ${colors.bold}${msg}${colors.reset}${detail ? `\n   ${colors.red}↳${colors.reset} ${colors.dim}${detail}${colors.reset}` : ''}`),
+  db: (msg) => console.log(`📂 ${colors.magenta}${colors.bold}[DATABASE]${colors.reset} ${msg}`),
+};
 
 const SHEET_NAME = 'Transaksi';
 const HEADER_ROW = [
@@ -30,9 +53,9 @@ async function initSheets() {
   spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
   if (!spreadsheetId) {
-    console.warn('⚠️  GOOGLE_SPREADSHEET_ID belum diset di .env');
-    console.warn('   Bot akan berjalan tapi data TIDAK akan disimpan ke Google Sheets.');
-    console.warn('   Ikuti instruksi di README.md untuk setup Google Sheets.');
+    log.warn('GOOGLE_SPREADSHEET_ID tidak terdeteksi pada konfigurasi .env');
+    console.warn(`   ${colors.yellow}⚠️  [PENTING] Bot tetap aktif tetapi transaksi TIDAK akan tersinkronisasi ke Google Sheets.${colors.reset}`);
+    console.warn(`   ${colors.dim}👉 Ikuti panduan instalasi di README.md untuk menyambungkan Google Sheets.${colors.reset}\n`);
     return;
   }
 
@@ -40,8 +63,9 @@ async function initSheets() {
   let privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
   if (!email || !privateKey) {
-    console.warn('⚠️  Google Service Account credentials belum lengkap di .env');
-    console.warn('   Butuh: GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY');
+    log.warn('Kredensial Google Service Account tidak lengkap di .env');
+    console.warn(`   ${colors.yellow}⚠️  [PENTING] Butuh variabel: GOOGLE_SERVICE_ACCOUNT_EMAIL & GOOGLE_PRIVATE_KEY di .env${colors.reset}`);
+    console.warn(`   ${colors.dim}👉 Jalankan bot lokal atau verifikasi konfigurasi serverless Anda.${colors.reset}\n`);
     return;
   }
 
@@ -67,10 +91,12 @@ async function initSheets() {
     // Cek dan buat header jika sheet kosong
     await ensureHeaders();
 
-    console.log('✅ Google Sheets terhubung');
+    log.success('Google Sheets Client berhasil tersambung secara real-time!');
   } catch (error) {
-    console.error('❌ Gagal menghubungkan Google Sheets:', error.message);
-    console.error('   Detail error:', error.stack || error);
+    log.error('Gagal menginisialisasi koneksi ke Google Sheets', error.message);
+    if (error.stack) {
+      console.error(`${colors.red}Stack trace:${colors.reset}\n${colors.dim}${error.stack}${colors.reset}`);
+    }
     sheetsInstance = null;
   }
 }
@@ -100,7 +126,7 @@ async function ensureHeaders() {
           values: [HEADER_ROW],
         },
       });
-      console.log('📝 Header row dibuat di Google Sheets');
+      log.db(`Kolom header utama [A1:H1] berhasil didaftarkan di sheet "${SHEET_NAME}".`);
     }
   } catch (error) {
     // Sheet mungkin belum ada, coba buat
@@ -131,12 +157,12 @@ async function ensureHeaders() {
             values: [HEADER_ROW],
           },
         });
-        console.log(`📝 Sheet "${SHEET_NAME}" dibuat dengan header`);
+        log.db(`Sheet baru "${SHEET_NAME}" sukses di-generate lengkap dengan kolom header.`);
       } catch (createError) {
-        console.error('❌ Gagal membuat sheet:', createError.message);
+        log.error('Gagal membuat sheet baru', createError.message);
       }
     } else {
-      console.error('❌ Error saat cek header:', error.message);
+      log.error('Error saat memeriksa header sheet', error.message);
     }
   }
 }
@@ -148,7 +174,7 @@ async function ensureHeaders() {
  */
 async function appendTransaction(data) {
   if (!sheetsInstance || !spreadsheetId) {
-    console.warn('⚠️  Google Sheets tidak terhubung, data tidak disimpan');
+    log.warn('Google Sheets tidak terhubung, melewati penyimpanan data');
     return false;
   }
 
@@ -174,9 +200,12 @@ async function appendTransaction(data) {
       },
     });
 
+    const changeColor = data.type === 'pemasukan' ? colors.green : colors.red;
+    const sign = data.type === 'pemasukan' ? '+' : '-';
+    log.db(`Transaksi dicatat: ${changeColor}${colors.bold}${sign}${formatRupiah(data.amount)}${colors.reset} | Kategori: ${colors.bold}${data.categoryEmoji} ${data.category}${colors.reset} | Deskripsi: "${data.note}"`);
     return true;
   } catch (error) {
-    console.error('❌ Gagal menyimpan ke Google Sheets:', error.message);
+    log.error('Gagal menyimpan transaksi ke Google Sheets', error.message);
     return false;
   }
 }
@@ -209,7 +238,7 @@ async function getTransactions() {
       timestamp: row[7] || '',
     }));
   } catch (error) {
-    console.error('❌ Gagal membaca Google Sheets:', error.message);
+    log.error('Gagal membaca data dari Google Sheets', error.message);
     return [];
   }
 }
@@ -271,6 +300,7 @@ async function deleteLastTransaction() {
       },
     });
 
+    log.db(`Transaksi terakhir di baris #${lastRowIndex} sukses dibatalkan & dihapus dari Google Sheets.`);
     return {
       date: lastRow[0] || '',
       time: lastRow[1] || '',
@@ -280,7 +310,7 @@ async function deleteLastTransaction() {
       note: lastRow[5] || '',
     };
   } catch (error) {
-    console.error('❌ Gagal menghapus transaksi:', error.message);
+    log.error('Gagal menghapus baris transaksi terakhir', error.message);
     return null;
   }
 }
