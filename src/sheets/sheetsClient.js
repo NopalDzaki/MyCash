@@ -37,7 +37,7 @@ async function initSheets() {
   }
 
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
   if (!email || !privateKey) {
     console.warn('⚠️  Google Service Account credentials belum lengkap di .env');
@@ -46,6 +46,13 @@ async function initSheets() {
   }
 
   try {
+    // Bersihkan tanda kutip pembungkus jika ada (sering terjadi saat diset via dashboard Vercel)
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+      privateKey = privateKey.slice(1, -1);
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: email,
