@@ -52,21 +52,6 @@ function formatTime(date) {
 }
 
 /**
- * Format tanggal pendek untuk laporan
- * @param {Date} date
- * @returns {string} e.g. "10/06/2026"
- */
-function formatDateShort(date) {
-  if (!(date instanceof Date)) date = new Date();
-
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
-
-/**
  * Nama bulan Indonesia
  * @param {number} monthIndex - 0-11
  * @returns {string}
@@ -79,4 +64,4 @@ function getMonthName(monthIndex) {
   return months[monthIndex] || '';
 }
 
-module.exports = { formatRupiah, formatDate, formatTime, formatDateShort, getMonthName };
+module.exports = { formatRupiah, formatDate, formatTime, getMonthName };

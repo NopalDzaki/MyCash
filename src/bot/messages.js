@@ -90,8 +90,6 @@ ${escapeMarkdown(typeLabel)}
  * Konfirmasi multi-transaksi berhasil dicatat
  */
 function multiTransactionSuccess(results, savedCount, totalCount) {
-  const { formatRupiah } = require('../utils/formatter');
-
   let totalAmount = 0;
   let msg = `✅ *${escapeMarkdown(String(savedCount))} transaksi tercatat\\!*\n`;
 
