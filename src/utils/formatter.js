@@ -25,16 +25,14 @@ function formatRupiah(amount) {
 function formatDate(date) {
   if (!(date instanceof Date)) date = new Date();
 
-  const months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ];
+  const formatter = new Intl.DateTimeFormat('id-ID', {
+    timeZone: process.env.TZ || 'Asia/Jakarta',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 
-  const day = date.getDate();
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-
-  return `${day} ${month} ${year}`;
+  return formatter.format(date);
 }
 
 /**
@@ -45,10 +43,18 @@ function formatDate(date) {
 function formatTime(date) {
   if (!(date instanceof Date)) date = new Date();
 
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const formatter = new Intl.DateTimeFormat('id-ID', {
+    timeZone: process.env.TZ || 'Asia/Jakarta',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 
-  return `${hours}:${minutes}`;
+  const parts = formatter.formatToParts(date);
+  const hour = parts.find((p) => p.type === 'hour').value;
+  const minute = parts.find((p) => p.type === 'minute').value;
+
+  return `${hour}:${minute}`;
 }
 
 /**
@@ -64,4 +70,25 @@ function getMonthName(monthIndex) {
   return months[monthIndex] || '';
 }
 
-module.exports = { formatRupiah, formatDate, formatTime, getMonthName };
+/**
+ * Dapatkan index bulan (0-11) dan tahun dalam timezone tertentu
+ * @param {Date} date
+ * @returns {{ month: number, year: number }}
+ */
+function getTzMonthAndYear(date) {
+  if (!(date instanceof Date)) date = new Date();
+  const tz = process.env.TZ || 'Asia/Jakarta';
+
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: 'numeric',
+  });
+  const parts = formatter.formatToParts(date);
+  const month = parseInt(parts.find((p) => p.type === 'month').value, 10) - 1;
+  const year = parseInt(parts.find((p) => p.type === 'year').value, 10);
+
+  return { month, year };
+}
+
+module.exports = { formatRupiah, formatDate, formatTime, getMonthName, getTzMonthAndYear };

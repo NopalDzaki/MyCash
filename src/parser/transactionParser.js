@@ -143,11 +143,13 @@ function parseTransaction(message, fullOriginalMessage) {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+        timeZone: process.env.TZ || 'Asia/Jakarta',
       }),
       time: now.toLocaleTimeString('id-ID', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
+        timeZone: process.env.TZ || 'Asia/Jakarta',
       }),
       timestamp: now.toISOString(),
     },

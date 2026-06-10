@@ -10,6 +10,7 @@ const { parseMultiTransaction } = require('../parser/transactionParser');
 const { getAllCategories } = require('../parser/categoryClassifier');
 const { appendTransaction, getTransactions, deleteLastTransaction, isConnected } = require('../sheets/sheetsClient');
 const messages = require('./messages');
+const { getTzMonthAndYear } = require('../utils/formatter');
 
 /**
  * Buat dan konfigurasi bot
@@ -63,13 +64,13 @@ function createBot(token) {
       const allTransactions = await getTransactions();
 
       // Filter transaksi bulan ini
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
+      const { month: currentMonth, year: currentYear } = getTzMonthAndYear(now);
 
       const monthTransactions = allTransactions.filter((t) => {
         if (!t.timestamp) return false;
         const tDate = new Date(t.timestamp);
-        return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
+        const { month: tMonth, year: tYear } = getTzMonthAndYear(tDate);
+        return tMonth === currentMonth && tYear === currentYear;
       });
 
       const report = messages.monthlyReport(currentMonth, currentYear, monthTransactions);
@@ -99,6 +100,7 @@ function createBot(token) {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+        timeZone: process.env.TZ || 'Asia/Jakarta',
       });
 
       const todayTransactions = allTransactions.filter((t) => t.date === todayStr);
